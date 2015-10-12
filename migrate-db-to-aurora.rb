@@ -194,6 +194,8 @@ def sync_replicas(replicaMysql, auroraMySql)
 end
 
 begin
+  STDOUT.sync = true
+
   options = {}
   OptionParser.new do |opts|
     opts.banner = "Usage: migrate-db-to-aurora.rb [options]"
