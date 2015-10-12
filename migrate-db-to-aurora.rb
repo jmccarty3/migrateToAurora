@@ -250,7 +250,8 @@ begin
 
   #Stage 2 Create Aurora
   stage2Time_start = Time.now
-  replicaMysql = Mysql2::Client.new(:host => replica.endpoint.address,:username => options[:user], :password => options[:pass])
+  replicaMysql = Mysql2::Client.new(:host => replica.endpoint.address,:username => options[:user], :password => options[:pass],
+    :reconnect => true)
   #Stop Replication of client
   stop_replication(replicaMysql)
 
@@ -263,7 +264,8 @@ begin
 
   #Stage 3 Begin Replication
   stage3Time_start = Time.now
-  auroraMySql = Mysql2::Client.new(:host => aurora.endpoint.address, :username => options[:user], :password => options[:pass])
+  auroraMySql = Mysql2::Client.new(:host => aurora.endpoint.address, :username => options[:user], :password => options[:pass],
+    :reconnect => true)
   sync_replicas(replicaMysql, auroraMySql)
 
   end_time = Time.now
