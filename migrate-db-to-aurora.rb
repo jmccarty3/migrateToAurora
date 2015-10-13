@@ -257,6 +257,8 @@ begin
   #Stop Replication of client
   stop_replication(replicaMysql)
 
+  replicaMysql.disconnet()
+
   #Create snapshot of replica
   snapshot = create_snapshot(client, replica)
 
@@ -266,6 +268,8 @@ begin
 
   #Stage 3 Begin Replication
   stage3Time_start = Time.now
+  replicaMysql = Mysql2::Client.new(:host => replica.endpoint.address,:username => options[:user], :password => options[:pass],
+    :reconnect => true)
   auroraMySql = Mysql2::Client.new(:host => aurora.endpoint.address, :username => options[:user], :password => options[:pass],
     :reconnect => true)
   sync_replicas(replicaMysql, auroraMySql)
