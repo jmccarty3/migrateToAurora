@@ -257,7 +257,7 @@ begin
   #Stop Replication of client
   stop_replication(replicaMysql)
 
-  replicaMysql.disconnet()
+  replicaMysql.close
 
   #Create snapshot of replica
   snapshot = create_snapshot(client, replica)
