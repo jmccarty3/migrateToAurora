@@ -77,6 +77,9 @@ end
 def stop_replication(mysql)
   resp = mysql.query("CALL mysql.rds_stop_replication")
   mysql.abandon_results!
+
+  puts "Stopped Replication. Pausing to allow current operations to finish"
+  sleep 30
   #resp.free
 end
 
@@ -138,6 +141,25 @@ def create_aurora(client,options, replica, snapshot)
     puts "Waiting for aurora cluster to become available"
     sleep 60
     aurora = Aws::RDS::DBInstance.new(options[:target], {client: client})
+  end
+
+  if !options[:group].nil?
+    puts "Setting Parameter group to #{options[:group]}. The triggering reboot"
+    aurora.modify({
+     db_parameter_group_name: options[:group]
+    })
+
+    client.reboot_db_instance({
+     db_instance_identifier: options[:target]})
+
+     sleep 30
+     aurora = Aws::RDS::DBInstance.new(options[:target], {client: client})
+
+     while aurora.db_instance_status != "available"
+       puts "Waiting for aurora cluster to become available"
+       sleep 60
+       aurora = Aws::RDS::DBInstance.new(options[:target], {client: client})
+     end
   end
   endTime=Time.now
 
@@ -214,6 +236,10 @@ begin
     opts.on('-s', '--stage STAGE', 'Stage to resume migration from [1-4]') do |s|
       options[:stage] = s.to_i
     end
+    opts.on('-g', '--group GROUP', 'Parameter group to apply to aurora instance') do |g|
+      options[:group] = g
+    end
+
   end.parse!
 
   raise OptionParser::MissingArgument if options[:db].nil?
